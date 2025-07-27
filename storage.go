@@ -30,7 +30,7 @@ func getSql(filename string) string {
 func addToStorage(dbData *DbData) (linkId int32, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
-		return 0, fmt.Errorf("Ошибка открытия соединения: %w", err)
+		return 0, fmt.Errorf("Error opening connection: %w", err)
 	}
 	defer db.Close()
 
@@ -43,7 +43,7 @@ func addToStorage(dbData *DbData) (linkId int32, err error) {
 	).Scan(&linkId)
 
 	if err != nil {
-		return 0, fmt.Errorf("Ошибка получения данных: %w", err)
+		return 0, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
 	return linkId, nil
@@ -53,7 +53,7 @@ func addToStorage(dbData *DbData) (linkId int32, err error) {
 func getFromStorage(dbData *DbData) (url string, title string, status bool, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
-		return "", "", false, fmt.Errorf("Ошибка открытия соединения: %w", err)
+		return "", "", false, fmt.Errorf("Error opening connection: %w", err)
 	}
 	defer db.Close()
 
@@ -64,7 +64,7 @@ func getFromStorage(dbData *DbData) (url string, title string, status bool, err 
 	).Scan(&url, &title, &status)
 
 	if err != nil {
-		return "", "", false, fmt.Errorf("Ошибка получения данных: %w", err)
+		return "", "", false, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
 	return url, title, status, nil
@@ -74,7 +74,7 @@ func getFromStorage(dbData *DbData) (url string, title string, status bool, err 
 func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title string, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
-		return 0, "", "", fmt.Errorf("Ошибка открытия соединения: %w", err)
+		return 0, "", "", fmt.Errorf("Error opening connection: %w", err)
 	}
 	defer db.Close()
 
@@ -84,7 +84,7 @@ func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title strin
 	).Scan(&linkId, &url, &title)
 
 	if err != nil {
-		return 0, "", "", fmt.Errorf("Ошибка получения данных: %w", err)
+		return 0, "", "", fmt.Errorf("Error retrieving data: %w", err)
 	}
 
 	return linkId, url, title, nil
@@ -94,7 +94,7 @@ func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title strin
 func delFromStorage(dbData *DbData) (bool, error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
-		return false, fmt.Errorf("Ошибка открытия соединения: %w", err)
+		return false, fmt.Errorf("Error opening connection: %w", err)
 	}
 	defer db.Close()
 
@@ -104,14 +104,14 @@ func delFromStorage(dbData *DbData) (bool, error) {
 		dbData.LinkId,
 	)
 	if err != nil {
-		return false, fmt.Errorf("Ошибка выполнения запрос: %w", err)
+		return false, fmt.Errorf("Error executing request: %w", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		return false, fmt.Errorf("Ошибка при получении количества удаленных строк: %w", err)
+		return false, fmt.Errorf("Error getting number of deleted rows: %w", err)
 	} else if rowsAffected == 0 {
-		return false, fmt.Errorf("Запись не удалена: %w", err)
+		return false, fmt.Errorf("The entry was not deleted: %w", err)
 	}
 
 	return true, nil
@@ -134,7 +134,7 @@ func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("Ошибка получения данных: %w", err)
+		return nil, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
 	urls = make(map[int32]Link)
@@ -146,7 +146,7 @@ func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 		)
 
 		if err := rows.Scan(&id, &url, &title); err != nil {
-			return nil, fmt.Errorf("Ошибка чтения данных: %w", err)
+			return nil, fmt.Errorf("Error reading data: %w", err)
 		}
 
 		urls[id] = Link{
@@ -157,12 +157,12 @@ func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 
 	// Checking that the iteration has completed correctly
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("Ошибка при обработке результатов: %w", err)
+		return nil, fmt.Errorf("Error processing results: %w", err)
 	}
 
 	err = rows.Close()
 	if err != nil {
-		return nil, fmt.Errorf("Ошибка закрытия соединения для rows: %w", err)
+		return nil, fmt.Errorf("Error closing connection for rows: %w", err)
 	}
 
 	return urls, nil
@@ -185,7 +185,7 @@ func recordIsExists(dbData *DbData) (linkId int32, status bool, err error) {
 		if err == sql.ErrNoRows {
 			return 0, false, nil
 		}
-		return 0, false, fmt.Errorf("Ошибка получения данных: %w", err)
+		return 0, false, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
 	return linkId, linkId != 0, nil
