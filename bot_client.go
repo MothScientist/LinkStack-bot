@@ -29,9 +29,9 @@ func botProcess(token string) {
 	b.RegisterHandlerMatchFunc(delMatch, delHandler)
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, startHandler)
-	//b.RegisterHandler(bot.HandlerTypeMessageText, "/list", bot.MatchTypeExact, listHandler)
 	//b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, helpHandler)
-	//b.RegisterHandler(bot.HandlerTypeMessageText, "/rdm", bot.MatchTypeExact, rdmHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/list", bot.MatchTypeExact, listHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/rdm", bot.MatchTypeExact, rdmHandler)
 
 	b.Start(context.TODO())
 }
