@@ -2,15 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+	"os"
+	"encoding/json"
 
 	"github.com/go-telegram/bot/models"
 	"golang.org/x/net/html"
 )
+
+var jsonHelpMsg map[string]string
 
 // getFirstUrl Gets the first link from the chain: message -> formatted message -> forwarded messages
 func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) string {
@@ -121,7 +126,7 @@ func getFirstH1Text(url string) string {
 	if h1Text == "" {
 		h1Text, err = extractDomain(url)
 		if err != nil {
-			// TODO
+			log.Printf("extractDomain error: %v", err)
 		}
 
 	}
@@ -138,7 +143,7 @@ func getHtmlData(url string) (*html.Node, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			// TODO - logs
+			log.Print(err)
 		}
 	}(resp.Body)
 
@@ -168,4 +173,23 @@ func getListMsg(urls map[int32]Link) (outputText string) {
 		outputText += fmt.Sprintf("%d: <a href=\"%s\">%s</a>\n", id, link.URL, link.Title)
 	}
 	return outputText
+}
+
+func loadLocaleJson() {
+	data, err := os.ReadFile("help_msg.json")
+	if err != nil {
+		log.Fatalf("Error reading .json file: %v", err)
+	}
+    if err = json.Unmarshal(data, &jsonHelpMsg); err != nil {
+		log.Fatalf("Error loading .json data into memory: %v", err)
+	}
+}
+
+func getLocaleHelpMsg(lang string) string {
+	switch lang {
+	case "en", "ru", "es":
+	default:
+		lang = "en"
+	}
+	return jsonHelpMsg[lang]
 }

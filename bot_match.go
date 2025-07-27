@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/go-telegram/bot/models"
 	"regexp"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 
 func addMatch(update *models.Update) bool {
 	urlText := getFirstUrl(update.Message.Text, update.Message.Entities, update.Message.CaptionEntities)
-	fmt.Println(urlText)
 	if urlText != "" {
 		urlCacheLink.Store(getCompositeSyncMapKey(update), urlText)
 		return true

@@ -9,14 +9,13 @@ import (
 func setupLogs() *os.File {
 	err := createDirectory()
 	if err != nil {
-		log.Fatalf("Error creating logs directory: %w", err)
+		log.Fatalf("Error creating logs directory: %v", err)
 	}
 
 	logFile, err := os.OpenFile("logs/bot.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0222)
 	if err != nil {
-		log.Fatalf("Error creating/opening file .log: %w", err)
+		log.Fatalf("Error creating/opening file .log: %v", err)
 	}
-	defer logFile.Close()
 
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)

@@ -23,7 +23,7 @@ func databaseCreate() {
 		log.Fatalf("Error closing main.sqlite3: %v", err)
 	}
 
-	fmt.Printf("File main.sqlite3 created")
+	fmt.Println("File main.sqlite3 created")
 }
 
 func createTable() {

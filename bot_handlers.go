@@ -3,16 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
 
-// Handler for adding a new link to the repository
+// addHandler Handler for adding a new link to the repository
 func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	urlText, ok := urlCacheLink.Load(getCompositeSyncMapKey(update))
 	defer urlCacheLink.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
 
-	if !ok { return } // TODO - logs
+	if !ok {
+		log.Print("Failed to get key from sync.Map")
+		return
+	}
 
 	dbData := DbData{
 		TelegramId: update.Message.From.ID,
@@ -29,7 +34,6 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	var outputText string
 	if err != nil {
-		fmt.Println(err)
 		outputText = "Error writing link to storage"
 	} else if status {
 		outputText = fmt.Sprintf("This link already exists in the repository\nNumber: %v", urlNumber)
@@ -41,15 +45,20 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:      outputText,
 		ParseMode: models.ParseModeMarkdown,
 	})
-
-	if err != nil { return } // TODO - logs
+	if err != nil {
+		log.Printf("Error sending message to user: %v", err)
+		return
+	}
 }
 
-// Handler for getting a link by its number from the storage
+// getHandler Handler for getting a link by its number from the storage
 func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
 	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link id from global cache
-	if !ok { return } // TODO - logs
+	if !ok {
+		log.Print("Failed to get key from sync.Map")
+		return
+	}
 
 	dbData := DbData{
 		TelegramId: update.Message.From.ID,
@@ -73,14 +82,20 @@ func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:      outputText,
 		ParseMode: models.ParseModeHTML,
 	})
-	if err != nil { return } // TODO - logs
+	if err != nil {
+		log.Printf("Error sending message to user: %v", err)
+		return
+	}
 }
 
-// Handler for deleting a link by its number from storage
+// delHandler Handler for deleting a link by its number from storage
 func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
 	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
-	if !ok { return } // TODO - logs
+	if !ok {
+		log.Print("Failed to get key from sync.Map")
+		return
+	}
 
 	dbData := DbData{
 		TelegramId: update.Message.From.ID,
@@ -90,7 +105,7 @@ func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	var outputText string
 	if err != nil {
-		fmt.Println(err)
+		log.Print(err)
 		outputText = "Error deleting record from storage"
 	} else if !status {
 		outputText = "There is no link with this number in the repository"
@@ -103,10 +118,13 @@ func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:      outputText,
 		ParseMode: models.ParseModeMarkdown,
 	})
-	if err != nil { return } // TODO - logs
+	if err != nil {
+		log.Printf("Error sending message to user: %v", err)
+		return
+	}
 }
 
-// Handler for getting a list of links from storage
+// listHandler Handler for getting a list of links from storage
 func listHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	dbData := DbData{
 		TelegramId: update.Message.From.ID,
@@ -116,8 +134,8 @@ func listHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	var outputText string
 	if err != nil {
+		log.Print(err)
 		outputText = "Error retrieving records from storage"
-		fmt.Print(err)
 	} else if urls == nil {
 		outputText = "There are no active records in the repository."
 	} else {
@@ -130,11 +148,12 @@ func listHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeHTML,
 	})
 	if err != nil {
-		return // TODO - logs
+		log.Printf("Error sending message to user: %v", err)
+		return
 	}
 }
 
-// Handler for getting a random link from storage (/rdm command)
+// rdmHandler Handler for getting a random link from storage (/rdm command)
 func rdmHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	dbData := DbData{
 		TelegramId: update.Message.From.ID,
@@ -143,7 +162,7 @@ func rdmHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	var outputText string
 	if err != nil {
-		fmt.Println(err)
+		log.Print(err)
 		outputText = "Error getting random record from storage"
 	} else if linkId == 0 {
 		outputText = "There are no active records in the repository"
@@ -156,10 +175,13 @@ func rdmHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:      outputText,
 		ParseMode: models.ParseModeHTML,
 	})
-	if err != nil { return } // TODO - logs
+	if err != nil {
+		log.Printf("Error sending message to user: %v", err)
+		return
+	}
 }
 
-// Handler for the /start command
+// startHandler Handler for the /start command
 func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    update.Message.Chat.ID,
@@ -167,25 +189,33 @@ func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		return // TODO - logs
+		log.Printf("Error sending message to user: %v", err)
+		return
 	}
 }
 
-// Handler for commands not handled by other functions
-func baseHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	//msgText := botMessageURL{
-	//	Text:               update.Message.Text,
-	//	ForwardMessageText: update.Message.CaptionEntities,
-	//}
-	fmt.Printf("%+v\n", update.Message.Entities)
-	//fmt.Printf("%+v\n", update.Message.CaptionEntities)
-
+func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	outputMsg := getLocaleHelpMsg(update.Message.From.LanguageCode)
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    update.Message.Chat.ID,
-		Text:      "Caught msg",
+		Text:      outputMsg,
+		ParseMode: models.ParseModeHTML,
+	})
+	if err != nil {
+		log.Printf("Error sending message to user: %v", err)
+		return
+	}
+}
+
+// baseHandler Handler for commands not handled by other functions
+func baseHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:    update.Message.Chat.ID,
+		Text:      "Message not recognized (read /help if you have questions)",
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		return // TODO - logs
+		log.Printf("Error sending message to user: %v", err)
+		return
 	}
 }
