@@ -26,7 +26,7 @@ func delMatch(update *models.Update) bool {
     return matchCommand(update, `^(?i)del\s+(\d+)$`)
 }
 
-// General function to check for commands like "get X" or "del X"
+// matchCommand General function to check for commands like "get X" or "del X"
 func matchCommand(update *models.Update, pattern string) bool {
     re := regexp.MustCompile(pattern)
     matches := re.FindStringSubmatch(update.Message.Text)

@@ -1,21 +1,49 @@
 package main
 
 import (
-	"os"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 func setupLogs() *os.File {
+	err := createDirectory()
+	if err != nil {
+		log.Fatalf("Error creating logs directory: %w", err)
+	}
+
 	logFile, err := os.OpenFile("logs/bot.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0222)
 	if err != nil {
-		log.Fatalf("Error opening log file: %v", err)
+		log.Fatalf("Error creating/opening file .log: %w", err)
 	}
 	defer logFile.Close()
 
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
-	log.Println("The server is running")
-
 	return logFile
+}
+
+// createDirectory Creates a logs directory in the current working directory if it does not exist.
+func createDirectory() error {
+	// Get current working directory
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	// Forming the full path to the logs directory
+	logsDir := filepath.Join(dir, "logs")
+
+	// Check for directory existence
+	if _, err := os.Stat(logsDir); os.IsNotExist(err) {
+		err := os.Mkdir(logsDir, 0755)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		// Handling other Stat errors
+		return err
+	}
+	return nil
 }

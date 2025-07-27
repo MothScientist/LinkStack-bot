@@ -34,3 +34,6 @@ go.work.sum
 # Database
 *.sqlite
 *.sqlite3
+
+# Logs
+*.log

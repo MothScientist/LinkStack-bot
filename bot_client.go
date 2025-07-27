@@ -12,7 +12,7 @@ import (
 var urlCacheLink sync.Map   // Saves link
 var urlCacheLinkId sync.Map // Saves link id
 
-// Function to launch the bot
+// botProcess Function to launch the bot
 func botProcess(token string) {
 	opts := []bot.Option{
 		bot.WithDefaultHandler(baseHandler),

@@ -26,7 +26,7 @@ func getSql(filename string) string {
 	return res
 }
 
-// Function of recording a link in the database
+// addToStorage Function of recording a link in the database
 func addToStorage(dbData *DbData) (linkId int32, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
@@ -49,7 +49,7 @@ func addToStorage(dbData *DbData) (linkId int32, err error) {
 	return linkId, nil
 }
 
-// Function for getting a link by id from the database
+// getFromStorage Function for getting a link by id from the database
 func getFromStorage(dbData *DbData) (url string, title string, status bool, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
@@ -70,7 +70,7 @@ func getFromStorage(dbData *DbData) (url string, title string, status bool, err 
 	return url, title, status, nil
 }
 
-// Function to get a random active user record from the database
+// getRandomFromStorage Function to get a random active user record from the database
 func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title string, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
@@ -90,7 +90,7 @@ func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title strin
 	return linkId, url, title, nil
 }
 
-// Function for deleting a link by id from the database
+// delFromStorage Function for deleting a link by id from the database
 func delFromStorage(dbData *DbData) (bool, error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
@@ -117,7 +117,7 @@ func delFromStorage(dbData *DbData) (bool, error) {
 	return true, nil
 }
 
-// Function to get a list of valid links from the repository {id: [title, url]}
+// getListFromStorage Function to get a list of valid links from the repository {id: [title, url]}
 func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {

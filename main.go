@@ -6,18 +6,15 @@ import (
 )
 
 func main() {
-	if !checkSqliteExists() {
-		log.Fatal("The file .sqlite3 is missing")
-	}
+	checkSqliteFileExists() // Checking for the presence of a DB file
+	cfg := loadConfig() // Loading configuration
+	logFile := setupLogs() // Setting up logging
+	loadSqlQueries() // Loading SQL queries into memory
 
-	cfg, err := loadConfig()
-	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
-	}
-
-	loadSqlQueries()
+	defer logFile.Close()
 
 	fmt.Print("Compilation was successful\n")
+	log.Print("Launching the bot...")
 
 	botProcess(cfg.Token)
 }

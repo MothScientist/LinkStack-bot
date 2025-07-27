@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-// Gets the first link from the chain: message -> formatted message -> forwarded messages
+// getFirstUrl Gets the first link from the chain: message -> formatted message -> forwarded messages
 func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) string {
 	if urlText := getUrlFromMessage(urlMsgText); urlText != "" {
 		return urlText
@@ -25,7 +25,7 @@ func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) s
 	return ""
 }
 
-// Finds and returns a link from forwarded messages or rich text
+// getUrlFromEntityMsg Finds and returns a link from forwarded messages or rich text
 func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
 	for _, msg := range entityMsg {
 		if msg.URL != "" {
@@ -35,7 +35,7 @@ func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
 	return ""
 }
 
-// Extracts a reference from a string
+// getUrlFromMessage Extracts a reference from a string
 func getUrlFromMessage(messageText string) string {
 	// Regular expression for finding URL:
 	// 1. Starts with http:// or https://
@@ -86,7 +86,7 @@ func extractDomain(rawURL string) (string, error) {
 	return domain, nil
 }
 
-// Gets the title inside the <h1> tag by parsing the html text
+// getFirstH1Text Gets the title inside the <h1> tag by parsing the html text
 func getFirstH1Text(url string) string {
 	doc, err := getHtmlData(url)
 	if err != nil {
@@ -129,7 +129,7 @@ func getFirstH1Text(url string) string {
 	return strings.TrimSpace(h1Text) // Remove spaces at the beginning and end
 }
 
-// Separate logic for obtaining an HTML document
+// getHtmlData Separate logic for obtaining an HTML document
 func getHtmlData(url string) (*html.Node, error) {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -154,7 +154,7 @@ func getHtmlData(url string) (*html.Node, error) {
 	return doc, nil
 }
 
-// Getting a composite key for sync.Map
+// getCompositeSyncMapKey Getting a composite key for sync.Map
 func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
 	return CompositeSyncMapKey{
 		TelegramId: update.Message.From.ID,
@@ -162,7 +162,7 @@ func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
 	}
 }
 
-// The function forms a single string from the input data with a list of user links
+// getListMsg The function forms a single string from the input data with a list of user links
 func getListMsg(urls map[int32]Link) (outputText string) {
 	for id, link := range urls {
 		outputText += fmt.Sprintf("%d: <a href=\"%s\">%s</a>\n", id, link.URL, link.Title)
