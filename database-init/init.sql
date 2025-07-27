@@ -9,10 +9,10 @@ CREATE TABLE links (
 );
 
 -- Index to search all user records
-CREATE INDEX idx_tg_id ON links(TelegramId);
+CREATE INDEX idx_tg_id ON links(TelegramId) WHERE Status = 1;
 
 -- Index for searching valid user records
 CREATE INDEX idx_tg_id_active_links ON links(TelegramId) WHERE Status = 1;
 
 -- Composite index for searching a specific user record
-CREATE INDEX idx_tg_link ON links(TelegramId, LinkId);
+CREATE INDEX idx_tg_link ON links(TelegramId, LinkId) WHERE Status = 1;
