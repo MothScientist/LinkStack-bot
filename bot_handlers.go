@@ -28,7 +28,7 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	if !status && err == nil {
 		// If the record does not exist yet, we get the title and write it down
-		dbData.Title = getFirstH1Text(dbData.Url)
+		dbData.Title = getTitle(dbData.Url)
 		urlNumber, err = addToStorage(&dbData)
 	}
 
@@ -185,7 +185,7 @@ func rdmHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    update.Message.Chat.ID,
-		Text:      "Caught */start*",
+		Text:      "/help\n/list\n/rdm",
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {

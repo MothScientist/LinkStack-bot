@@ -1,15 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
-	"regexp"
-	"strings"
 	"os"
-	"encoding/json"
+	"regexp"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/go-telegram/bot/models"
 	"golang.org/x/net/html"
@@ -43,57 +45,63 @@ func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
 // getUrlFromMessage Extracts a reference from a string
 func getUrlFromMessage(messageText string) string {
 	// Regular expression for finding URL:
-	// 1. Starts with http:// or https://
+	// 1. Starts with https://
 	// 2. Domain: letters, numbers, periods, hyphens
 	// 3. Path: any characters except spaces and punctuation
 	// 4. Ignores periods/commas at the end
-	re := regexp.MustCompile(`https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(?:/[^\s.,!?;:"'<>(){}]*)?`)
+	re := regexp.MustCompile(`https://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(?:/[^\s.,!?;:"'<>(){}]*)?`)
 
 	// Looking for the first match
 	match := re.FindString(messageText)
-	if checkValidateUrl(match) {
+	if isUrl(match) {
 		return match
 	}
 	return ""
 }
 
-func checkValidateUrl(urlText string) bool {
+func isUrl(urlText string) bool {
 	u, err := url.Parse(urlText)
-	if err != nil {
-		return false
-	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return false
-	}
-	return true
+	return err == nil && u.Scheme != "" && u.Host != "" && u.Scheme == "https"
 }
 
-func extractDomain(rawURL string) (string, error) {
-	u, err := url.Parse(rawURL)
+func extractDomain(msgUrl string) string {
+	u, err := url.Parse(msgUrl)
 	if err != nil {
-		return "", err
+		log.Printf("Incorrect URL: %v, error: %v", msgUrl, err)
+		return ""
 	}
 
-	host := u.Hostname()
-	if host == "" {
-		return "", fmt.Errorf("не удалось извлечь домен")
-	}
+	host := u.Host
 
-	// Remove 'www.' if there is one
+	// Remove "www." at the beginning
 	domain := strings.TrimPrefix(host, "www.")
 
-	// We take only the second level domain for some cases
-	parts := strings.Split(domain, ".")
-	if len(parts) > 2 {
-		domain = strings.Join(parts[len(parts)-2:], ".")
+	return domain
+}
+
+func getTitle(msgUrl string) string {
+	msgTitle := getFirstH1Text(msgUrl)
+	if msgTitle == "" {
+		msgTitle = extractDomain(msgUrl)
+		if msgTitle == "" {
+			msgTitle = msgUrl
+		}
 	}
 
-	return domain, nil
+	msgTitle = strings.TrimSpace(msgTitle) // Remove spaces at the beginning and end
+
+	maxTitleLen := 70
+	if len(msgTitle) > maxTitleLen {
+		msgTitle = msgTitle[:maxTitleLen]
+		strings.TrimSpace(msgTitle)
+	}
+
+	return msgTitle
 }
 
 // getFirstH1Text Gets the title inside the <h1> tag by parsing the html text
-func getFirstH1Text(url string) string {
-	doc, err := getHtmlData(url)
+func getFirstH1Text(msgUrl string) string {
+	doc, err := getHtmlData(msgUrl)
 	if err != nil {
 		return "" // If you didn't find the title - no problem, we'll just leave a link
 	}
@@ -123,20 +131,23 @@ func getFirstH1Text(url string) string {
 	}
 	findH1(doc)
 
-	if h1Text == "" {
-		h1Text, err = extractDomain(url)
-		if err != nil {
-			log.Printf("extractDomain error: %v", err)
-		}
-
-	}
-
-	return strings.TrimSpace(h1Text) // Remove spaces at the beginning and end
+	return h1Text
 }
 
 // getHtmlData Separate logic for obtaining an HTML document
 func getHtmlData(url string) (*html.Node, error) {
-	resp, err := http.Get(url)
+	// Take precautions when receiving html from a site
+	client := &http.Client{
+		Timeout: 3 * time.Second,
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch URL: %v", err)
 	}
@@ -169,10 +180,22 @@ func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
 
 // getListMsg The function forms a single string from the input data with a list of user links
 func getListMsg(urls map[int32]Link) (outputText string) {
-	for id, link := range urls {
-		outputText += fmt.Sprintf("%d: <a href=\"%s\">%s</a>\n", id, link.URL, link.Title)
+	keys := getSortKeys(urls)
+	for _, id := range keys {
+		linkData := urls[int32(id)]
+		outputText += fmt.Sprintf("%d: <a href=\"%s\">%s</a>\n", id, linkData.URL, linkData.Title)
 	}
 	return outputText
+}
+
+// getSortKeys Sort keys in map in ascending order
+func getSortKeys(unsortMap map[int32]Link) []int {
+	keys := make([]int, 0, len(unsortMap))
+	for k := range unsortMap {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys) // sort ascending
+	return keys
 }
 
 func loadLocaleJson() {
@@ -180,7 +203,7 @@ func loadLocaleJson() {
 	if err != nil {
 		log.Fatalf("Error reading .json file: %v", err)
 	}
-    if err = json.Unmarshal(data, &jsonHelpMsg); err != nil {
+	if err = json.Unmarshal(data, &jsonHelpMsg); err != nil {
 		log.Fatalf("Error loading .json data into memory: %v", err)
 	}
 }

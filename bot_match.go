@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/go-telegram/bot/models"
 	"regexp"
 	"strconv"
+
+	"github.com/go-telegram/bot/models"
 )
 
 func addMatch(update *models.Update) bool {
