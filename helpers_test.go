@@ -66,6 +66,12 @@ func TestExtractDomain(t *testing.T) {
 		}, {
 			urlText: "https://test-example.test.com",
 			expected: "test-example.test.com",
+		}, {
+			urlText: "https://example.com",
+			expected: "example.com",
+		}, {
+			urlText: "https://habr.com/ru/companies/ruvds/articles/932220/",
+			expected: "habr.com",
 		},
 	}
 
