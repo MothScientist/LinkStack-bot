@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -16,8 +14,6 @@ import (
 	"github.com/go-telegram/bot/models"
 	"golang.org/x/net/html"
 )
-
-var jsonHelpMsg map[string]string
 
 // getFirstUrl Gets the first link from the chain: message -> formatted message -> forwarded messages
 func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) string {
@@ -32,6 +28,15 @@ func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) s
 	return ""
 }
 
+// getUrlFromMessage Extracts a reference from a string
+func getUrlFromMessage(messageText string) string {
+	match := regexpUrl(messageText, false)
+	if match != "" && isUrl(match) {
+		return match
+	}
+	return ""
+}
+
 // getUrlFromEntityMsg Finds and returns a link from forwarded messages or rich text
 func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
 	for _, msg := range entityMsg {
@@ -42,26 +47,24 @@ func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
 	return ""
 }
 
-// getUrlFromMessage Extracts a reference from a string
-func getUrlFromMessage(messageText string) string {
-	// Regular expression for finding URL:
-	// 1. Starts with https://
-	// 2. Domain: letters, numbers, periods, hyphens
-	// 3. Path: any characters except spaces and punctuation
-	// 4. Ignores periods/commas at the end
-	re := regexp.MustCompile(`https://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(?:/[^\s.,!?;:"'<>(){}]*)?`)
-
-	// Looking for the first match
-	match := re.FindString(messageText)
-	if isUrl(match) {
-		return match
+// regexpUrl Checks if url is in a string
+func regexpUrl(messageText string, fullString bool) string {
+	var re *regexp.Regexp
+	if fullString {
+		// checks that a string exactly matches a regular expression
+		re = regexp.MustCompile(`^https://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/?([^:\s]*)?$`)
+	} else {
+		re = regexp.MustCompile(`https://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+/?([^:\s]*)?`)
 	}
-	return ""
+	return re.FindString(messageText)
 }
 
 func isUrl(urlText string) bool {
+	if regexpUrl(urlText, true) == "" {
+		return false
+	}
 	u, err := url.Parse(urlText)
-	return err == nil && u.Scheme != "" && u.Host != "" && u.Scheme == "https"
+	return err == nil && u.Scheme != "" && u.Host != "" && u.Scheme == "https" && u.Port() == ""
 }
 
 func extractDomain(msgUrl string) string {
@@ -90,10 +93,10 @@ func getTitle(msgUrl string) string {
 
 	msgTitle = strings.TrimSpace(msgTitle) // Remove spaces at the beginning and end
 
-	maxTitleLen := 70
-	if len(msgTitle) > maxTitleLen {
-		msgTitle = msgTitle[:maxTitleLen]
-		strings.TrimSpace(msgTitle)
+	// Cut the string exactly by characters, without breaking them in the encoding
+	maxTitleLen := 100
+	if len([]rune(msgTitle)) > maxTitleLen {
+		msgTitle = strings.TrimSpace(string([]rune(msgTitle)[:maxTitleLen]))
 	}
 
 	return msgTitle
@@ -196,23 +199,4 @@ func getSortKeys(unsortMap map[int32]Link) []int {
 	}
 	sort.Ints(keys) // sort ascending
 	return keys
-}
-
-func loadLocaleJson() {
-	data, err := os.ReadFile("help_msg.json")
-	if err != nil {
-		log.Fatalf("Error reading .json file: %v", err)
-	}
-	if err = json.Unmarshal(data, &jsonHelpMsg); err != nil {
-		log.Fatalf("Error loading .json data into memory: %v", err)
-	}
-}
-
-func getLocaleHelpMsg(lang string) string {
-	switch lang {
-	case "en", "ru", "es":
-	default:
-		lang = "en"
-	}
-	return jsonHelpMsg[lang]
 }

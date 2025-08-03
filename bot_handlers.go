@@ -136,7 +136,7 @@ func listHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	if err != nil {
 		log.Print(err)
 		outputText = "Error retrieving records from storage"
-	} else if urls == nil {
+	} else if len(urls) == 0 {
 		outputText = "There are no active records in the repository."
 	} else {
 		outputText = getListMsg(urls)

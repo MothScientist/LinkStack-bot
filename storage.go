@@ -64,6 +64,9 @@ func getFromStorage(dbData *DbData) (url string, title string, status bool, err 
 	).Scan(&url, &title, &status)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", "", false, nil
+		}
 		return "", "", false, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
@@ -84,6 +87,9 @@ func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title strin
 	).Scan(&linkId, &url, &title)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, "", "", nil
+		}
 		return 0, "", "", fmt.Errorf("Error retrieving data: %w", err)
 	}
 
@@ -104,6 +110,9 @@ func delFromStorage(dbData *DbData) (bool, error) {
 		dbData.LinkId,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, fmt.Errorf("Error executing request: %w", err)
 	}
 
@@ -130,14 +139,15 @@ func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 		dbData.TelegramId,
 	)
 
+	urls = make(map[int32]Link)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return urls, nil
 		}
 		return nil, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
-	urls = make(map[int32]Link)
 	for rows.Next() {
 		var (
 			id    int32
