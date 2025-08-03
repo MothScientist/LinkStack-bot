@@ -1,0 +1,7 @@
+*.test
+LICENSE
+*.md
+*.sqlite
+*.sqlite3
+logs/
+*.log
