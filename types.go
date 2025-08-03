@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/go-telegram/bot/models"
+)
+
 // DbData Data passed between bot handlers and storage
 type DbData struct {
 	TelegramId int64
@@ -29,4 +33,12 @@ type Link struct {
 type CompositeSyncMapKey struct {
 	TelegramId int64
 	MsgId      int
+}
+
+// getCompositeSyncMapKey Getting a composite key for sync.Map
+func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
+	return CompositeSyncMapKey{
+		TelegramId: update.Message.From.ID,
+		MsgId:      update.Message.ID,
+	}
 }

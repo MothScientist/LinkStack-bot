@@ -11,41 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-telegram/bot/models"
 	"golang.org/x/net/html"
 )
-
-// getFirstUrl Gets the first link from the chain: message -> formatted message -> forwarded messages
-func getFirstUrl(urlMsgText string, urlEntitiesText ...[]models.MessageEntity) string {
-	if urlText := getUrlFromMessage(urlMsgText); urlText != "" {
-		return urlText
-	}
-	for _, urlEntText := range urlEntitiesText {
-		if urlText := getUrlFromEntityMsg(urlEntText); urlText != "" {
-			return urlText
-		}
-	}
-	return ""
-}
-
-// getUrlFromMessage Extracts a reference from a string
-func getUrlFromMessage(messageText string) string {
-	match := regexpUrl(messageText, false)
-	if match != "" && isUrl(match) {
-		return match
-	}
-	return ""
-}
-
-// getUrlFromEntityMsg Finds and returns a link from forwarded messages or rich text
-func getUrlFromEntityMsg(entityMsg []models.MessageEntity) string {
-	for _, msg := range entityMsg {
-		if msg.URL != "" {
-			return msg.URL
-		}
-	}
-	return ""
-}
 
 // regexpUrl Checks if url is in a string
 func regexpUrl(messageText string, fullString bool) string {
@@ -171,14 +138,6 @@ func getHtmlData(url string) (*html.Node, error) {
 		return nil, fmt.Errorf("failed to parse HTML: %v", err)
 	}
 	return doc, nil
-}
-
-// getCompositeSyncMapKey Getting a composite key for sync.Map
-func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
-	return CompositeSyncMapKey{
-		TelegramId: update.Message.From.ID,
-		MsgId:      update.Message.ID,
-	}
 }
 
 // getListMsg The function forms a single string from the input data with a list of user links
