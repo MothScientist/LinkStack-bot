@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 )
 
 func setupLogs() *os.File {
@@ -45,4 +46,15 @@ func createDirectory() error {
 		return err
 	}
 	return nil
+}
+
+func logPanic() {
+	if r := recover(); r != nil {
+            log.Printf(
+                "PANIC: %v\nStack trace:\n%s",
+                r,
+                string(debug.Stack()),
+            )
+            os.Exit(1)
+        }
 }

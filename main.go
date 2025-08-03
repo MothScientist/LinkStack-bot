@@ -13,6 +13,7 @@ func main() {
 
 	logFile := setupLogs() // Setting up logging (load last to use log.Fatal() in functions above)
 	defer logFile.Close()
+	defer logPanic()
 
 	fmt.Print("Compilation was successful\n")
 	log.Print("Launching the bot...")
