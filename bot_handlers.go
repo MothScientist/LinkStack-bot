@@ -15,7 +15,7 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	defer urlCacheLink.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
 
 	if !ok {
-		log.Print("Failed to get key from sync.Map")
+		log.Print("Failed to get key from sync.Map;")
 		return
 	}
 
@@ -46,7 +46,7 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
@@ -56,7 +56,7 @@ func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
 	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link id from global cache
 	if !ok {
-		log.Print("Failed to get key from sync.Map")
+		log.Print("Failed to get key from sync.Map;")
 		return
 	}
 
@@ -83,7 +83,7 @@ func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeHTML,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
@@ -93,7 +93,7 @@ func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
 	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
 	if !ok {
-		log.Print("Failed to get key from sync.Map")
+		log.Print("Failed to get key from sync.Map;")
 		return
 	}
 
@@ -119,7 +119,7 @@ func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
