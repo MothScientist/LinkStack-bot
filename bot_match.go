@@ -10,7 +10,7 @@ import (
 func addMatch(update *models.Update) bool {
 	urlText := getFirstUrl(update.Message.Text, update.Message.Entities, update.Message.CaptionEntities)
 	if urlText != "" {
-		urlCacheLink.Store(getCompositeSyncMapKey(update), urlText)
+		bridgeLink.Store(getCompositeSyncMapKey(update), urlText)
 		return true
 	}
 	return false
@@ -35,7 +35,7 @@ func matchCommand(update *models.Update, pattern string) bool {
     num, err := strconv.Atoi(matches[1])
     if err != nil { return false }
 
-    urlCacheLinkId.Store(getCompositeSyncMapKey(update), int32(num))
+	bridgeLinkId.Store(getCompositeSyncMapKey(update), int32(num))
     return true
 }
 

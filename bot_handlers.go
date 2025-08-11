@@ -11,8 +11,8 @@ import (
 
 // addHandler Handler for adding a new link to the repository
 func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	urlText, ok := urlCacheLink.Load(getCompositeSyncMapKey(update))
-	defer urlCacheLink.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
+	urlText, ok := bridgeLink.Load(getCompositeSyncMapKey(update))
+	defer bridgeLink.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
 
 	if !ok {
 		log.Print("Failed to get key from sync.Map;")
@@ -53,8 +53,8 @@ func addHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 // getHandler Handler for getting a link by its number from the storage
 func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
-	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link id from global cache
+	linkId, ok := bridgeLinkId.Load(getCompositeSyncMapKey(update))
+	defer bridgeLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link id from global cache
 	if !ok {
 		log.Print("Failed to get key from sync.Map;")
 		return
@@ -90,8 +90,8 @@ func getHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 // delHandler Handler for deleting a link by its number from storage
 func delHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	linkId, ok := urlCacheLinkId.Load(getCompositeSyncMapKey(update))
-	defer urlCacheLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
+	linkId, ok := bridgeLinkId.Load(getCompositeSyncMapKey(update))
+	defer bridgeLinkId.Delete(getCompositeSyncMapKey(update)) // Remove link from global cache
 	if !ok {
 		log.Print("Failed to get key from sync.Map;")
 		return
@@ -176,7 +176,7 @@ func rdmHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeHTML,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
@@ -189,7 +189,7 @@ func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
@@ -202,7 +202,7 @@ func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeHTML,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }
@@ -215,7 +215,7 @@ func baseHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		ParseMode: models.ParseModeMarkdown,
 	})
 	if err != nil {
-		log.Printf("Error sending message to user: %v", err)
+		log.Printf("Error sending message to user: %v;", err)
 		return
 	}
 }

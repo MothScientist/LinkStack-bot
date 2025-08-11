@@ -37,7 +37,7 @@ func isUrl(urlText string) bool {
 func extractDomain(msgUrl string) string {
 	u, err := url.Parse(msgUrl)
 	if err != nil {
-		log.Printf("Incorrect URL: %v, error: %v", msgUrl, err)
+		log.Printf("Incorrect URL: %v, error: %v;", msgUrl, err)
 		return ""
 	}
 

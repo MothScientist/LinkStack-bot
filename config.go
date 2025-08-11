@@ -15,7 +15,7 @@ func loadConfig() *Config {
 	// Receive the required token
 	token := os.Getenv("BOT_TOKEN")
 	if token == "" {
-		log.Fatalf("BOT_TOKEN env variable not set")
+		log.Fatalf("BOT_TOKEN env variable not set;")
 	}
 	return &Config{
 		Token: token,

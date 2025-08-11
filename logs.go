@@ -10,12 +10,12 @@ import (
 func setupLogs() *os.File {
 	err := createDirectory()
 	if err != nil {
-		log.Fatalf("Error creating logs directory: %v", err)
+		log.Fatalf("Error creating logs directory: %v;", err)
 	}
 
 	logFile, err := os.OpenFile("logs/bot.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0222)
 	if err != nil {
-		log.Fatalf("Error creating/opening file .log: %v", err)
+		log.Fatalf("Error creating/opening file .log: %v;", err)
 	}
 
 	log.SetOutput(logFile)
@@ -51,7 +51,7 @@ func createDirectory() error {
 func logPanic() {
 	if r := recover(); r != nil {
             log.Printf(
-                "PANIC: %v\nStack trace:\n%s",
+                "PANIC: %v\nStack trace:\n%s;",
                 r,
                 string(debug.Stack()),
             )

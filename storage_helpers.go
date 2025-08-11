@@ -25,7 +25,7 @@ func loadSqlQueries() {
 		var err error
 		*load.queriesField, err = readSqlFile(load.sqlFilename)
 		if err != nil {
-			log.Fatalf("Error reading file %s: %v", load.sqlFilename, err)
+			log.Fatalf("Error reading file %s: %v;", load.sqlFilename, err)
 		}
 	}
 }
@@ -41,7 +41,7 @@ func readSqlFile(filename string) (string, error) {
 func checkSqliteFileExists() {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Failed to get current directory: %v", err)
+		log.Fatalf("Failed to get current directory: %v;", err)
 	}
 
 	dbPath := filepath.Join(currentDir, "main.sqlite3")
@@ -49,16 +49,16 @@ func checkSqliteFileExists() {
 	fileInfo, err := os.Stat(dbPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Fatalf("File main.sqlite3 does not exist")
+			log.Fatalf("File main.sqlite3 does not exist;")
 		}
-		log.Fatalf("File verification error: %v", err)
+		log.Fatalf("File verification error: %v;", err)
 	}
 
 	if fileInfo.IsDir() {
-		log.Fatal("main.sqlite3 is a directory, not a file")
+		log.Fatal("main.sqlite3 is a directory, not a file;")
 	}
 
 	if fileInfo.Mode().Perm()&0400 == 0 {
-		log.Fatal("No permission to read file main.sqlite3")
+		log.Fatal("No permission to read file main.sqlite3;")
 	}
 }

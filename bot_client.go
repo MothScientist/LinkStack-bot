@@ -9,8 +9,8 @@ import (
 )
 
 // The following variables are required to store the calculated value within a single request (between Match and Handler), avoiding data races
-var urlCacheLink sync.Map   // Saves link
-var urlCacheLinkId sync.Map // Saves link id
+var bridgeLink sync.Map   // Saves link
+var bridgeLinkId sync.Map // Saves link id
 
 // botProcess Function to launch the bot
 func botProcess(token string) {
@@ -21,7 +21,7 @@ func botProcess(token string) {
 	b, err := bot.New(token, opts...)
 
 	if err != nil {
-		log.Fatalf("bot not started: %v", err)
+		log.Fatalf("bot not started: %v;", err)
 	}
 
 	b.RegisterHandlerMatchFunc(addMatch, addHandler)
