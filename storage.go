@@ -94,7 +94,7 @@ func getFromStorage(dbData DbData) (url string, title string, status bool, err e
 }
 
 // getRandomFromStorage Function to get a random active user record from the database
-func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title string, err error) {
+func getRandomFromStorage(dbData DbData) (linkId int32, url string, title string, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
 		return 0, "", "", fmt.Errorf("Error opening connection: %w", err)
