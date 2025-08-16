@@ -16,7 +16,7 @@ func main() {
 	defer logPanic()
 
 	fmt.Print("Compilation was successful\n")
-	log.Print("Launching the bot...")
+	log.Print("Launching the bot...;")
 
 	botProcess(cfg.Token)
 }

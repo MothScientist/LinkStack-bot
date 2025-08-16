@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -27,7 +28,7 @@ func getSql(filename string) string {
 }
 
 // addToStorage Function of recording a link in the database
-func addToStorage(dbData *DbData) (linkId int32, err error) {
+func addToStorage(dbData DbData) (linkId int32, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
 		return 0, fmt.Errorf("Error opening connection: %w", err)
@@ -41,16 +42,27 @@ func addToStorage(dbData *DbData) (linkId int32, err error) {
 		dbData.Url,
 		dbData.Title,
 	).Scan(&linkId)
+	dbData.LinkId = linkId
 
 	if err != nil {
 		return 0, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
+	cacheData := Link{
+		URL:   dbData.Url,
+		Title: dbData.Title,
+	}
+	getUserCache.Add(getCacheCompositeKeyByDbData(dbData), cacheData)
+	log.Print("[DB] addToStorage")
 	return linkId, nil
 }
 
 // getFromStorage Function for getting a link by id from the database
-func getFromStorage(dbData *DbData) (url string, title string, status bool, err error) {
+func getFromStorage(dbData DbData) (url string, title string, status bool, err error) {
+	cacheLink := getUserCache.Get(getCacheCompositeKeyByDbData(dbData))
+	if cacheLink != nil {
+		return cacheLink.URL, cacheLink.Title, true, nil
+	}
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
 		return "", "", false, fmt.Errorf("Error opening connection: %w", err)
@@ -70,6 +82,14 @@ func getFromStorage(dbData *DbData) (url string, title string, status bool, err 
 		return "", "", false, fmt.Errorf("Error retrieving data: %w", err)
 	}
 
+	cacheData := Link{
+		URL:   url,
+		Title: title,
+	}
+	if status == true && url != "" {
+		getUserCache.Add(getCacheCompositeKeyByDbData(dbData), cacheData)
+	}
+	log.Print("[DB] getFromStorage")
 	return url, title, status, nil
 }
 
@@ -93,11 +113,19 @@ func getRandomFromStorage(dbData *DbData) (linkId int32, url string, title strin
 		return 0, "", "", fmt.Errorf("Error retrieving data: %w", err)
 	}
 
+	cacheData := Link{
+		URL:   url,
+		Title: title,
+	}
+	if url != "" {
+		getUserCache.Add(getCacheCompositeKeyByDbData(dbData), cacheData)
+	}
+	log.Print("[DB] getRandomFromStorage")
 	return linkId, url, title, nil
 }
 
 // delFromStorage Function for deleting a link by id from the database
-func delFromStorage(dbData *DbData) (bool, error) {
+func delFromStorage(dbData DbData) (bool, error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
 		return false, fmt.Errorf("Error opening connection: %w", err)
@@ -110,9 +138,6 @@ func delFromStorage(dbData *DbData) (bool, error) {
 		dbData.LinkId,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
 		return false, fmt.Errorf("Error executing request: %w", err)
 	}
 
@@ -120,14 +145,16 @@ func delFromStorage(dbData *DbData) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("Error getting number of deleted rows: %w", err)
 	} else if rowsAffected == 0 {
-		return false, fmt.Errorf("The entry was not deleted: %w", err)
+		return false, nil // The record was previously deleted
 	}
 
+	getUserCache.Del(getCacheCompositeKeyByDbData(dbData))
+	log.Print("[DB] delFromStorage")
 	return true, nil
 }
 
 // getListFromStorage Function to get a list of valid links from the repository {id: [title, url]}
-func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
+func getListFromStorage(dbData DbData) (urls map[int32]Link, err error) {
 	db, err := sql.Open("sqlite3", "main.sqlite3")
 	if err != nil {
 		return nil, err
@@ -170,11 +197,11 @@ func getListFromStorage(dbData *DbData) (urls map[int32]Link, err error) {
 		return nil, fmt.Errorf("Error processing results: %w", err)
 	}
 
-	err = rows.Close()
-	if err != nil {
+	if err := rows.Close(); err != nil {
 		return nil, fmt.Errorf("Error closing connection for rows: %w", err)
 	}
 
+	log.Print("[DB] getListFromStorage")
 	return urls, nil
 }
 

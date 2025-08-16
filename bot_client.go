@@ -12,6 +12,8 @@ import (
 var bridgeLink sync.Map   // Saves link
 var bridgeLinkId sync.Map // Saves link id
 
+var getUserCache *GetUserCache = NewGetUserCache()
+
 // botProcess Function to launch the bot
 func botProcess(token string) {
 	opts := []bot.Option{

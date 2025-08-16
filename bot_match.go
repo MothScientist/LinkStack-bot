@@ -10,7 +10,7 @@ import (
 func addMatch(update *models.Update) bool {
 	urlText := getFirstUrl(update.Message.Text, update.Message.Entities, update.Message.CaptionEntities)
 	if urlText != "" {
-		bridgeLink.Store(getCompositeSyncMapKey(update), urlText)
+		bridgeLink.Store(getCompositeSyncMapKeyByUpdate(update), urlText)
 		return true
 	}
 	return false
@@ -18,25 +18,29 @@ func addMatch(update *models.Update) bool {
 }
 
 func getMatch(update *models.Update) bool {
-    return matchCommand(update, `^(?i)get\s+(\d+)$`)
+	return matchCommand(update, `^(?i)get\s+(\d+)$`)
 }
 
 func delMatch(update *models.Update) bool {
-    return matchCommand(update, `^(?i)del\s+(\d+)$`)
+	return matchCommand(update, `^(?i)del\s+(\d+)$`)
 }
 
 // matchCommand General function to check for commands like "get X" or "del X"
 func matchCommand(update *models.Update, pattern string) bool {
-    re := regexp.MustCompile(pattern)
-    matches := re.FindStringSubmatch(update.Message.Text)
+	re := regexp.MustCompile(pattern)
+	matches := re.FindStringSubmatch(update.Message.Text)
 
-    if len(matches) != 2 { return false }
+	if len(matches) != 2 {
+		return false
+	}
 
-    num, err := strconv.Atoi(matches[1])
-    if err != nil { return false }
+	num, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return false
+	}
 
-	bridgeLinkId.Store(getCompositeSyncMapKey(update), int32(num))
-    return true
+	bridgeLinkId.Store(getCompositeSyncMapKeyByUpdate(update), int32(num))
+	return true
 }
 
 // getFirstUrl Gets the first link from the chain: message -> formatted message -> forwarded messages

@@ -15,12 +15,12 @@ type DbData struct {
 
 // SqlQueries When launched, it loads .sql queries into RAM
 type SqlQueries struct {
-	addRecord        string
-	delRecord        string
-	getRecord        string
-	getListRecords   string
-	getRandomRecord  string
-	recordIsExists   string
+	addRecord       string
+	delRecord       string
+	getRecord       string
+	getListRecords  string
+	getRandomRecord string
+	recordIsExists  string
 }
 
 // Link Structure for storing a link with a title
@@ -35,8 +35,8 @@ type CompositeSyncMapKey struct {
 	MsgId      int
 }
 
-// getCompositeSyncMapKey Getting a composite key for sync.Map
-func getCompositeSyncMapKey(update *models.Update) CompositeSyncMapKey {
+// getCompositeSyncMapKeyByUpdate Getting a composite key for sync.Map
+func getCompositeSyncMapKeyByUpdate(update *models.Update) CompositeSyncMapKey {
 	return CompositeSyncMapKey{
 		TelegramId: update.Message.From.ID,
 		MsgId:      update.Message.ID,
